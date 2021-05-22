@@ -1,1 +1,5 @@
 .idea
+cred
+.terraform*
+terraform.tfstate*
+plan
