@@ -1,0 +1,43 @@
+---
+- name: add docker gpg key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+
+- name: install packages
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - python3-pip
+      - libffi-dev
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: add docker repository
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/{{ ansible_system | lower }}/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable"
+
+- name: install docker-ce
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - python3-docker
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: copy config
+  template:
+    src: "etc/docker/daemon.json"
+    dest: "/etc/docker/daemon.json"
+    mode: "0644"
+    owner: "root"
+    group: "root"
+  notify:
+    - restart docker
+
+- name: install docker-compose Python module
+  pip:
+    name: docker-compose
+    state: present

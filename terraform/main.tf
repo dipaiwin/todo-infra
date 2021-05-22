@@ -30,10 +30,19 @@ resource "google_compute_instance" "default" {
     access_config {
       nat_ip = google_compute_address.todo-infra.address
       network_tier = "STANDARD"
+
     }
   }
 }
 
-output "ip" {
-  value = google_compute_instance.default.network_interface.0.access_config.0.nat_ip
+resource "google_compute_firewall" "default" {
+  name    = "todo-firewall"
+  network = "default"
+  allow {
+    protocol = "icmp"
+  }
+  allow {
+    protocol = "tcp"
+    ports    = ["22","80", "443", "8080","27017"]
+  }
 }

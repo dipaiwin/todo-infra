@@ -1,0 +1,53 @@
+---
+- name: run mongodb container
+  docker_container:
+    name: mongodb
+    state: started
+    restart_policy: always
+    image: "mongo:4.4.6"
+    detach: yes
+    volumes:
+      - "/data/mongo/db:/data/db:rw"
+      - "/etc/mongod.conf:/etc/mongod.conf:ro"
+    published_ports:
+      - "27017:27017"
+
+- name: copy mongodb config
+  template:
+    src: "etc/mongod.conf"
+    dest: "/etc/mongod.conf"
+    mode: "0755"
+    owner: "systemd-coredump"
+    group: "systemd-coredump"
+  notify:
+    - restart mongodb
+
+- name: mongodb 2. install pymongo 3.11
+  pip:
+    name: pymongo
+    version: 3.11
+    umask: "0022"
+  tags: pymongo
+
+- name: mongodb 6A. create mongodb admin user
+  mongodb_user:
+    database: 'admin'
+    name: 'admin'
+    password: "{{ vault_mongodb_admin_password }}"
+    roles: 'userAdminAnyDatabase,dbAdminAnyDatabase,readWriteAnyDatabase'
+    state: present
+  ignore_errors: yes
+  tags: create_mongoadmin
+
+- name: create mongodb todo user
+  mongodb_user:
+    database: "todo"
+    name: "todo"
+    password: "{{ vault_mongodb_password_todo }}"
+    roles: 'dbOwner,readWrite'
+    state: present
+    login_database: admin
+    login_user: admin
+    login_password: "{{ vault_mongodb_admin_password }}"
+  tags: create_todo_mongo_user
+  ignore_errors: yes

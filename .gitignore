@@ -3,3 +3,4 @@ cred
 .terraform*
 terraform.tfstate*
 plan
+.vault-pass

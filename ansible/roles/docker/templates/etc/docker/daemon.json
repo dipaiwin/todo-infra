@@ -1,0 +1,6 @@
+{% raw %}
+{
+ "log-opts":{"tag": "{{.Name}}", "max-size": "10m", "max-file": "3"}
+}
+{% endraw %}
+
